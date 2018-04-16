@@ -22,11 +22,13 @@ def test_board_size(board):
     assert len(board.positions) == 19
     assert len(board.positions[0]) == 19
 
+
 def test_create_new_dragon(board):
-    assert len(board.dragons) == 0
+    assert not board.dragons
     _id = board.create_new_dragon()
-    assert _id == 0
+    assert _id == 1
     assert len(board.dragons) == 1
+
 
 def test_stitch_dragons(board):
     board.dragons[1] = Dragon(1, board)
