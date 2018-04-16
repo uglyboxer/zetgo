@@ -1,9 +1,20 @@
-class Board:
+class Board(object):
 
     def __init__(self, board_size):
         self.board_size = board_size
         self.dragons = {}
         self.positions = [[Position(x, y, self.board_size) for y in range(self.board_size)] for x in range(self.board_size)]
+
+    @property
+    def next_dragon(self):
+        if not self.dragons:
+            return 1
+        return max(self.dragons.keys()) + 1
+
+    def create_new_dragon(self):
+        dragon_id = self.next_dragon
+        self.dragons[dragon_id] = Dragon(dragon_id, self)
+        return dragon_id
 
     def pos_by_location(self, tup):
         '''
@@ -42,8 +53,19 @@ class Board:
         return d1
 
     def get_neighboring_dragons(self, pos, color):
-        neighbors = pos.neighbors_locs
-        return [self.pos_by_location(x).dragon for x in neighbors if x.color == color]
+        neighbors = [self.pos_by_location(x) for x in pos.neighbors_locs]
+        rv = set()
+        for x in neighbors:
+            if x.dragon and x.color == color:
+                rv.add(self.dragons[x.dragon])
+        return rv
+
+    def get_opposing_color(self, color):
+        if not color:
+            return None
+        elif color == 'b':
+            return 'w'
+        return 'b'
 
     def imagine_position(self, pos, color):
         """
@@ -57,10 +79,44 @@ class Board:
                    'captured': list of dragon instances,
                    'stitched': list of dragon instances}
         """
-        opposing_dragons = get_neighboring_dragons(pos, pos.opposing_color)
-        self_dragons = get_neighboring_dragons(pos, color)
+        rv = {'suicide': False,
+              'captured': set(),
+              'opp_neighbor': set(),
+              'stitched': set()}
+        opposing_dragons = self.get_neighboring_dragons(pos, self.get_opposing_color(color))
+        self_dragons = self.get_neighboring_dragons(pos, color)
         neighbors = [self.pos_by_location(x) for x in pos.neighbors_locs]
         liberties = [x for x in neighbors if not x.is_occupied]
+
+        for opp_dragon in opposing_dragons:
+            if opp_dragon.liberties == {pos}:
+                rv['captured'].add(opp_dragon)
+            else:
+                rv['opp_neighbor'].add(opp_dragon)
+        
+        check_for_suicide = self.imagine_stitched_valid(pos, self_dragons)
+        if liberties or check_for_suicide:
+            rv['stitched'] = self_dragons
+        elif not rv['captured'] or not check_for_suicide:
+            rv['suicide'] = True
+        else:
+            raise NotImplementedError('Must be liberties or resulting captures.  Should not be able to get here.')
+
+        return rv
+
+    def imagine_stitched_valid(self, pos, dragons):
+        """
+        Checks to see if the current position is the last liberty of all associated dragons
+        """
+        if not dragons:
+            return False
+        liberties = set()
+        for dragon in dragons:
+            print('liberties: {}'.format(dragon.liberties))
+            liberties.update(dragon.liberties)
+        if liberties == {pos}:
+            return False
+        return True
 
     def capture_dragon(self, dragon_id):
         d = self.dragons[dragon_id]
@@ -89,7 +145,7 @@ class Board:
         return board
 
 
-class Position:
+class Position(object):
 
     def __init__(self, x, y, board_size):
         self.x = x
@@ -114,8 +170,7 @@ class Position:
             return None
         elif self.color == 'b':
             return 'w'
-        else:
-            return 'b'
+        return 'b'
 
     def occupy(self, color):
         self.color = color
@@ -130,7 +185,7 @@ class Position:
         return set([(x, y) for x, y in neighbors])
 
 
-class Dragon:
+class Dragon(object):
 
     def __init__(self, identifier, board):
 
@@ -139,10 +194,13 @@ class Dragon:
         self.board = board
         self.members = set()
         self.neighbors = set()
-        self.liberties = 0
+        self.liberties = set()
 
     def is_member(self, pos):
         return pos in self.members
+
+    def update(self):
+        self.liberties = set([x for x in self.neighbors if not x.is_occupied])
 
     def add_member(self, pos, force=False):
         if self.color and self.color != pos.color:
@@ -157,4 +215,4 @@ class Dragon:
         self.members.add(pos)
         self.neighbors.update(set([self.board.pos_by_location(x) for x in pos.neighbors_locs]))
         self.neighbors = self.neighbors - self.members
-        self.liberties = sum([1 for x in self.neighbors if not x.is_occupied])
+        self.liberties = {x for x in self.neighbors if not x.is_occupied}

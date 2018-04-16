@@ -22,6 +22,11 @@ def test_board_size(board):
     assert len(board.positions) == 19
     assert len(board.positions[0]) == 19
 
+def test_create_new_dragon(board):
+    assert len(board.dragons) == 0
+    _id = board.create_new_dragon()
+    assert _id == 0
+    assert len(board.dragons) == 1
 
 def test_stitch_dragons(board):
     board.dragons[1] = Dragon(1, board)
@@ -59,8 +64,67 @@ def test_stitch_unconnected_dragons(board):
 
 
 def test_get_neighboring_dragons(board):
+    # TODO test neighbors without dragon attribute
+    # TODO test neighbors color == None and color attribute
     pass
 
+
+def test_imagine_position(board):
+    d = Dragon(1, board)
+    board.dragons[1] = d
+    for x in range(3):
+        p = board.positions[3][2+x]
+        p.color = 'b'
+        p.dragon = 1
+        d.add_member(p)
+    p = board.positions[4][4]
+    p.color = 'b'
+    d.add_member(p)
+    d = Dragon(2, board)
+    board.dragons[2] = d
+    for x in range(3):
+        p = board.positions[5][2+x]
+        p.color = 'w'
+        p.dragon = 2
+        d.add_member(p)
+    p = board.positions[4][2]
+    p.color = 'w'
+    d.add_member(p)
+
+    p = board.positions[4][3]
+    rv = board.imagine_position(p, 'b')
+    assert not rv['suicide']
+    assert rv['stitched'] == {board.dragons[1]}
+    assert not rv['captured']
+
+
+def test_imagine_suicide_position(board):
+    d = Dragon(1, board)
+    board.dragons[1] = d
+    for x in range(3):
+        p = board.positions[3][2+x]
+        p.color = 'b'
+        p.dragon = 1
+        d.add_member(p)
+    p = board.positions[4][4]
+    p.color = 'b'
+    d.add_member(p)
+    d = Dragon(2, board)
+    board.dragons[2] = d
+    for x in range(3):
+        p = board.positions[5][2+x]
+        p.color = 'b'
+        p.dragon = 2
+        d.add_member(p)
+    p = board.positions[4][2]
+    p.color = 'b'
+    d.add_member(p)
+
+    p = board.positions[4][3]
+    rv = board.imagine_position(p, 'w')
+    assert rv['suicide']
+    assert not rv['stitched']
+    assert not rv['captured']
 
 def test_capture_dragon(board):
     d = Dragon(1, board)
@@ -138,7 +202,7 @@ def test_neighbors(board):
 
     assert len(d.neighbors) == 6
     assert len(d.members) == 2
-    assert d.liberties == 6
+    assert len(d.liberties) == 6
 
 
 def test_edge_neighbors(board):
@@ -150,4 +214,4 @@ def test_edge_neighbors(board):
 
     assert len(d.neighbors) == 4
     assert len(d.members) == 2
-    assert d.liberties == 4
+    assert len(d.liberties) == 4
