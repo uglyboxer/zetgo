@@ -95,12 +95,11 @@ class Board(object):
                 rv['opp_neighbor'].add(opp_dragon)
         
         check_for_suicide = self.imagine_stitched_valid(pos, self_dragons)
+
         if liberties or check_for_suicide:
             rv['stitched'] = self_dragons
-        elif not rv['captured'] or not check_for_suicide:
+        elif not liberties and not rv['captured']:
             rv['suicide'] = True
-        else:
-            raise NotImplementedError('Must be liberties or resulting captures.  Should not be able to get here.')
 
         return rv
 
@@ -112,7 +111,6 @@ class Board(object):
             return False
         liberties = set()
         for dragon in dragons:
-            print('liberties: {}'.format(dragon.liberties))
             liberties.update(dragon.liberties)
         if liberties == {pos}:
             return False
@@ -121,9 +119,14 @@ class Board(object):
     def capture_dragon(self, dragon_id):
         d = self.dragons[dragon_id]
         captures = len(d.members)
+        opposing_dragons = set()
         for pos in d.members:
+            opposing_dragons.update(self.get_neighboring_dragons(pos, self.get_opposing_color(d.color)))
+
             pos.color = None
             pos.dragon = None
+        for dragon in opposing_dragons:
+            dragon.update()
         del self.dragons[dragon_id]
         del d
         return captures
