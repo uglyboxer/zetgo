@@ -52,28 +52,28 @@ class Board(object):
         del d2
         return d1
 
-    def get_neighboring_dragons(self, pos, color):
+    def get_neighboring_dragons(self, pos, player):
         neighbors = [self.pos_by_location(x) for x in pos.neighbors_locs]
         rv = set()
         for x in neighbors:
-            if x.dragon and x.color == color:
+            if x.dragon and x.player == player:
                 rv.add(self.dragons[x.dragon])
         return rv
 
-    def get_opposing_color(self, color):
-        if not color:
-            return None
-        elif color == 'b':
-            return 'w'
-        return 'b'
+    def get_opposing_player(self, player):
+        if not player:
+            return 0
+        elif player == 1:
+            return -1
+        return 1
 
-    def imagine_position(self, pos, color):
+    def imagine_position(self, pos, player):
         """
         For a given position instance, imagine the outcome playing there.
 
         Args:
             pos Position instance
-            color str: 'b' or 'w'
+            player str: 1 or -1
         Returns:
             dict  {'suicide': bool,
                    'captured': list of dragon instances,
@@ -83,8 +83,8 @@ class Board(object):
               'captured': set(),
               'opp_neighbor': set(),
               'stitched': set()}
-        opposing_dragons = self.get_neighboring_dragons(pos, self.get_opposing_color(color))
-        self_dragons = self.get_neighboring_dragons(pos, color)
+        opposing_dragons = self.get_neighboring_dragons(pos, self.get_opposing_player(player))
+        self_dragons = self.get_neighboring_dragons(pos, player)
         neighbors = [self.pos_by_location(x) for x in pos.neighbors_locs]
         liberties = [x for x in neighbors if not x.is_occupied]
 
@@ -121,9 +121,9 @@ class Board(object):
         captures = len(d.members)
         opposing_dragons = set()
         for pos in d.members:
-            opposing_dragons.update(self.get_neighboring_dragons(pos, self.get_opposing_color(d.color)))
+            opposing_dragons.update(self.get_neighboring_dragons(pos, self.get_opposing_player(d.player)))
 
-            pos.color = None
+            pos.player = 0
             pos.dragon = None
         for dragon in opposing_dragons:
             dragon.update()
@@ -131,18 +131,63 @@ class Board(object):
         del d
         return captures
 
+    def set_empty_dragons(self):
+
+        rv = {}
+        empty = []
+        empty_ds = set()
+        for x in range(self.board_size):
+            for y in range(self.board_size):
+                if not self.positions[x][y].is_occupied:
+                    empty.append(self.positions[x][y])
+
+        for pos1 in empty:
+            if not pos1.dragon:  #TODO this creates secondary dragons sometimes.  Need to catch or stitch
+                dragon_id = self.create_new_dragon()
+                dragon = self.dragons[dragon_id]
+                empty_ds.add(dragon)
+                dragon.add_member(pos1)
+            else:
+                dragon = self.dragons[pos1.dragon]
+
+            for pos2 in empty:
+                if pos1 == pos2:
+                    continue
+                if pos2 in dragon.neighbors:
+                    dragon.add_member(pos2)
+
+        pairs_to_stitch = []
+        for d in empty_ds:
+            for x in empty_ds:
+                if d == x:
+                    continue
+                if d.neighbors.intersection(x.members):
+                    pairs_to_stitch.append((d.identifier, x.identifier))
+
+        for p, q in pairs_to_stitch:
+            self.stitch_dragons(p, q)
+
+        for d in empty_ds:
+            surr_color = set()
+            for x in d.neighbors:
+                surr_color.add(x.player)
+            if len(surr_color) == 1:
+                rv[list(surr_color)[0]].add(d)
+                print('{} surrounded by {}'.format(d.identifier, surr_color))
+        return empty_ds
+
     def to_ascii(self):
         board = ''
         for row in self.positions:
             r = ''
             for pos in row:
-                if pos.color == 'b':
-                    color = 'x '
-                elif pos.color == 'w':
-                    color = 'o '
+                if pos.player == 1:
+                    player = 'x '
+                elif pos.player == -1:
+                    player = 'o '
                 else:
-                    color = '. '
-                r += color
+                    player = '. '
+                r += player
             r += '\n'
             board += r
         return board
@@ -156,8 +201,11 @@ class Position(object):
         self.board_size = board_size
 
         self.dragon = None
-        self.color = None
+        self.player = 0
         self.neighbors_locs = self.init_neighbors()
+
+    def __str__(self):
+        return '{}, {}'.format(self.x, self.y)
 
     @property
     def loc(self):
@@ -165,18 +213,18 @@ class Position(object):
 
     @property
     def is_occupied(self):
-        return self.color is not None
+        return self.player != 0
 
     @property
-    def opposing_color(self):
-        if not self.color:
-            return None
-        elif self.color == 'b':
-            return 'w'
-        return 'b'
+    def opposing_player(self):
+        if not self.player:
+            return 0
+        elif self.player == 1:
+            return -1
+        return 1
 
-    def occupy(self, color):
-        self.color = color
+    def occupy(self, player):
+        self.player = player
 
     def init_neighbors(self):
 
@@ -193,7 +241,7 @@ class Dragon(object):
     def __init__(self, identifier, board):
 
         self.identifier = identifier
-        self.color = None
+        self.player = 0
         self.board = board
         self.members = set()
         self.neighbors = set()
@@ -206,14 +254,14 @@ class Dragon(object):
         self.liberties = set([x for x in self.neighbors if not x.is_occupied])
 
     def add_member(self, pos, force=False):
-        if self.color and self.color != pos.color:
-            raise NotImplementedError('Wrong color to connect to this dragon.')
+        if self.player and self.player != pos.player:
+            raise NotImplementedError('Wrong player to connect to this dragon.')
 
         if not force and self.members and pos not in self.neighbors:
             raise NotImplementedError('Cannot connect to this dragon.')
 
-        if not self.color:
-            self.color = pos.color
+        if not self.player:
+            self.player = pos.player
         pos.dragon = self.identifier
         self.members.add(pos)
         self.neighbors.update(set([self.board.pos_by_location(x) for x in pos.neighbors_locs]))

@@ -35,13 +35,13 @@ def test_stitch_dragons(board):
     board.dragons[2] = Dragon(2, board)
     for x in range(3):
         p = board.pos_by_location((1, 1 + x))
-        p.color = 'b'
+        p.player = 'b'
         board.dragons[1].add_member(p)
         q = board.pos_by_location((3, 1 + x))
-        q.color = 'b'
+        q.player = 'b'
         board.dragons[2].add_member(q)
     r = board.pos_by_location((2, 1))
-    r.color = 'b'
+    r.player = 'b'
     board.dragons[1].add_member(r)
 
     assert len(board.dragons) == 2
@@ -67,7 +67,7 @@ def test_stitch_unconnected_dragons(board):
 
 def test_get_neighboring_dragons(board):
     # TODO test neighbors without dragon attribute
-    # TODO test neighbors color == None and color attribute
+    # TODO test neighbors player == None and player attribute
     pass
 
 
@@ -76,21 +76,21 @@ def test_imagine_position(board):
     board.dragons[1] = d
     for x in range(3):
         p = board.positions[3][2+x]
-        p.color = 'b'
+        p.player = 'b'
         p.dragon = 1
         d.add_member(p)
     p = board.positions[4][4]
-    p.color = 'b'
+    p.player = 'b'
     d.add_member(p)
     d = Dragon(2, board)
     board.dragons[2] = d
     for x in range(3):
         p = board.positions[5][2+x]
-        p.color = 'w'
+        p.player = 'w'
         p.dragon = 2
         d.add_member(p)
     p = board.positions[4][2]
-    p.color = 'w'
+    p.player = 'w'
     d.add_member(p)
 
     p = board.positions[4][3]
@@ -105,21 +105,21 @@ def test_imagine_suicide_position(board):
     board.dragons[1] = d
     for x in range(3):
         p = board.positions[3][2+x]
-        p.color = 'b'
+        p.player = 'b'
         p.dragon = 1
         d.add_member(p)
     p = board.positions[4][4]
-    p.color = 'b'
+    p.player = 'b'
     d.add_member(p)
     d = Dragon(2, board)
     board.dragons[2] = d
     for x in range(3):
         p = board.positions[5][2+x]
-        p.color = 'b'
+        p.player = 'b'
         p.dragon = 2
         d.add_member(p)
     p = board.positions[4][2]
-    p.color = 'b'
+    p.player = 'b'
     d.add_member(p)
 
     p = board.positions[4][3]
@@ -133,12 +133,12 @@ def test_capture_dragon(board):
     board.dragons[1] = d
     for x in range(4):
         p = board.positions[3][2+x]
-        p.color = 'b'
+        p.player = 'b'
         p.dragon = 1
         d.add_member(p)
 
     p = board.positions[4][5]
-    p.color = 'b'
+    p.player = 'b'
     p.dragon = 1
     d.add_member(p)
     rv = board.capture_dragon(1)
@@ -154,7 +154,7 @@ def test_to_ascii(board):
 def test_position_attributes():
     p = Position(2, 3, 19)
     assert p.is_occupied is False
-    assert p.color is None
+    assert p.player is 0
     assert p.neighbors_locs == set([(1, 3), (3, 3), (2, 2), (2, 4)])
 
     p2 = Position(0, 2, 19)
@@ -163,25 +163,25 @@ def test_position_attributes():
 
 def test_position_occupy():
     p = Position(0, 2, 19)
-    assert p.color is None
+    assert p.player is 0
     assert p.is_occupied is False
     p.occupy('b')
-    assert p.color == 'b'
+    assert p.player == 'b'
     assert p.is_occupied is True
 
 
-def test_opposing_color():
+def test_opposing_player():
     p = Position(0, 2, 19)
-    assert p.color is None
-    assert p.opposing_color is None
-    p.occupy('b')
-    assert p.opposing_color == 'w'
+    assert p.player is 0
+    assert p.opposing_player is 0
+    p.occupy(1)
+    assert p.opposing_player == -1
 
     p = Position(9, 4, 19)
-    assert p.color is None
-    assert p.opposing_color is None
-    p.occupy('w')
-    assert p.opposing_color == 'b'
+    assert p.player is 0
+    assert p.opposing_player is 0
+    p.occupy(-1)
+    assert p.opposing_player == 1
 
 
 # ===== Dragon ========

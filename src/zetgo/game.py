@@ -1,4 +1,5 @@
-from board import Board
+import os
+from zetgo.board import Board
 
 
 '''
@@ -25,39 +26,46 @@ class Game(object):
     def __init__(self, board_size=19):
 
         self.board = Board(board_size=board_size)
-        self.current_player = 'b'  # TODO, accept handicaps and set this to 'w'
+        self.current_player = 1  # TODO, accept handicaps and set this to 'w'
         self.passes = [False, False]
-        self.captures = {'b': 0, 'w': 0}
+        self.captures = {1: 0, -1: 0}
 
     def switch_player(self):
-        self.current_player = 'b' if self.current_player == 'w' else 'w'
+        self.current_player = self.current_player * -1
 
     def score(self):
-        pass
+        return self.board.set_empty_dragons()
 
     def move(self, move):
         board = self.board
+        result = {'complete': False,
+                  'valid': True}
         try:
             if move == 'p':
                 if self.passes[0]:
                     self.passes[1] = True
-                    return "FIN"
+                    result['complete'] = True
+                    return result
                 else:
                     self.passes[0] = True
                     self.switch_player()
-                    return True
+                    return result
             x, y = convert_from_str(move)
         except ValueError:
             print('Need input of the form: int, int')
-            return False
+            result['valid'] = False
+            return result
         else:
+            # The below should be a board method
             pos = board.pos_by_location((x, y))
             if pos.is_occupied:
-                return False
+                result['valid'] = False
+                return result
             rv = board.imagine_position(pos, self.current_player)
             print(rv)
             if rv['suicide']:
-                return False
+                result['valid'] = False
+                return result
             # TODO imagine zoborist
             friendly_dragons = list(rv['stitched'])
             touched_dragons = set()
@@ -81,7 +89,7 @@ class Game(object):
                 dragon.update()
             self.passes[0] = False
         self.switch_player()
-        return True
+        return result
 
     def play(self):
         board = self.board
@@ -144,14 +152,19 @@ def convert_from_str(move):
 # TODO break up this function and provide api for bot or viz
 # TODO provide a list of possible moves for action space
 def start_game():
-    game = Game()
+    game = Game(5)
+    os.system("clear")
+    print(game.board.to_ascii())
+    print(game.captures)
     while not game.passes[1]:
         move = input('{} please place stone: '.format(game.current_player))
         rv = game.move(move)
-        if rv == 'FIN':
+        if rv['complete']:
             game.score()
+            break
         elif not rv:
             continue
+        os.system("clear")
         print(game.board.to_ascii())
         print(game.captures)
 
