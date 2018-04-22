@@ -59,34 +59,25 @@ clock = pygame.time.Clock()
 
 
 while not done and not game.passes[1]:
-    # event = pygame.event.wait()
+    event = pygame.event.wait()
+    if event.type == pygame.QUIT:  # If user clicked close
+        done = True  # Flag that we are done so we exit this loop
+    elif event.type == pygame.MOUSEBUTTONUP:
+        pos = pygame.mouse.get_pos()
+        # Change the x/y screen coordinates to grid coordinates
+        column = pos[0] // (WIDTH + MARGIN)
+        row = pos[1] // (HEIGHT + MARGIN)
+        if column == BOARD_SIZE and row == BOARD_SIZE:
+            move = 'p'
+            rv = game.move(move)
 
-    for event in pygame.event.get():
-        print(event)
-        if event.type == pygame.QUIT:  # If user clicked close
-            done = True  # Flag that we are done so we exit this loop
-        elif event.type == pygame.MOUSEBUTTONUP:
-        #     pos = pygame.mouse.get_pos()
-        #     continue
-        
-        # elif event.type == pygame.MOUSEMOTION:
-            # User clicks the mouse. Get the position
-            pos = pygame.mouse.get_pos()
-            # Change the x/y screen coordinates to grid coordinates
-            column = pos[0] // (WIDTH + MARGIN)
-            row = pos[1] // (HEIGHT + MARGIN)
-            if column == BOARD_SIZE and row == BOARD_SIZE:
-                move = 'p'
-                rv = game.move(move)
-
-            else:
-                move = '{}, {}'.format(row, column)
-                rv = game.move(move)
-                grid[row][column] = game.board.positions[row][column].player
-            # Set that location to one
-            if rv['complete']:
-                game.score()
-            print("Click ", pos, "Grid coordinates: ", row, column)
+        else:
+            move = '{}, {}'.format(row, column)
+            rv = game.move(move)
+            grid[row][column] = game.board.positions[row][column].player
+        # Set that location to one
+        if rv['complete']:
+            game.score()
 
     # Set the screen background
     screen.fill(BLACK)
@@ -111,7 +102,7 @@ while not done and not game.passes[1]:
          WIDTH,
          HEIGHT]) 
     # Limit to 60 frames per second
-    clock.tick(4)
+    clock.tick(10)
     # Go ahead and update the screen with what we've drawn.
     pygame.display.update()
  

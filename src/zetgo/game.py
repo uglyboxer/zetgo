@@ -64,14 +64,10 @@ class Game(object):
         else:
             # The below should be a board method
             pos = board.pos_by_location((x, y))
-            if pos.is_occupied:
-                result['valid'] = False
-                return result
             rv = board.imagine_position(pos, self.current_player)
-            if rv['suicide']:
+            if rv['occupied'] or rv['suicide'] or rv['repeat']:
                 result['valid'] = False
                 return result
-            # TODO imagine zoborist
             friendly_dragons = list(rv['stitched'])
             touched_dragons = set()
             pos.occupy(self.current_player)
@@ -92,6 +88,8 @@ class Game(object):
             touched_dragons.update(rv['opp_neighbor'])
             for dragon in touched_dragons:
                 dragon.update()
+
+            board.z_table.add(rv['zhash'])
             self.passes[0] = False
         self.switch_player()
         return result

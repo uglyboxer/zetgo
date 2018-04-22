@@ -1,15 +1,24 @@
+from zobrist import Zobrist
+
+
 class Board(object):
 
     def __init__(self, board_size):
         self.board_size = board_size
         self.dragons = {}
         self.positions = [[Position(x, y, self.board_size) for y in range(self.board_size)] for x in range(self.board_size)]
+        self.zobrist = Zobrist()
+        self.z_table = set()
 
     @property
     def next_dragon(self):
         if not self.dragons:
             return 1
         return max(self.dragons.keys()) + 1
+
+    def imagine_zobrist(self, pos, captures, player):
+        board = self.fake_board(pos, captures, player)
+        return self.zobrist.get_hash(board, fake=True)
 
     def create_new_dragon(self):
         dragon_id = self.next_dragon
@@ -70,6 +79,20 @@ class Board(object):
             return -1
         return 1
 
+    def fake_board(self, pos, captures, player):
+        fake = []
+        for row in self.positions:
+            fake_row = []
+            for point in row:
+                fake_row.append(point.player)
+            fake.append(fake_row)
+        fake[pos.x][pos.y] = player
+
+        for captured_dragon in captures:
+            for capture in captured_dragon.members:
+                fake[capture.x][capture.y] = 0
+        return fake
+
     def imagine_position(self, pos, player):
         """
         For a given position instance, imagine the outcome playing there.
@@ -83,9 +106,16 @@ class Board(object):
                    'stitched': list of dragon instances}
         """
         rv = {'suicide': False,
+              'occupied': False,
+              'repeat': False,
+              'zhash': None,
               'captured': set(),
               'opp_neighbor': set(),
               'stitched': set()}
+        if pos.is_occupied:
+            rv['occupied'] = True
+            return rv
+
         opposing_dragons = self.get_neighboring_dragons(pos, self.get_opposing_player(player))
         self_dragons = self.get_neighboring_dragons(pos, player)
         neighbors = [self.pos_by_location(x) for x in pos.neighbors_locs]
@@ -96,7 +126,7 @@ class Board(object):
                 rv['captured'].add(opp_dragon)
             else:
                 rv['opp_neighbor'].add(opp_dragon)
-        
+
         check_for_suicide = self.imagine_stitched_valid(pos, self_dragons)
 
         if liberties or check_for_suicide:
@@ -104,6 +134,9 @@ class Board(object):
         elif not liberties and not rv['captured']:
             rv['suicide'] = True
 
+        rv['zhash'] = self.imagine_zobrist(pos, rv['captured'], player)
+        if rv['zhash'] in self.z_table:
+            rv['repeat'] = True
         return rv
 
     def imagine_stitched_valid(self, pos, dragons):
