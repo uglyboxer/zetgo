@@ -53,11 +53,14 @@ class Board(object):
         return d1
 
     def get_neighboring_dragons(self, pos, player):
+        print('neighbor called with {} {}'.format(pos, player))
         neighbors = [self.pos_by_location(x) for x in pos.neighbors_locs]
         rv = set()
         for x in neighbors:
             if x.dragon and x.player == player:
                 rv.add(self.dragons[x.dragon])
+        if player == 0:
+            print(rv)
         return rv
 
     def get_opposing_player(self, player):
@@ -133,48 +136,44 @@ class Board(object):
 
     def set_empty_dragons(self):
 
-        rv = {}
+        rv = {'all_dragons': set(),
+              1: set(),
+              -1: set()}
         empty = []
-        empty_ds = set()
         for x in range(self.board_size):
             for y in range(self.board_size):
                 if not self.positions[x][y].is_occupied:
                     empty.append(self.positions[x][y])
-
         for pos1 in empty:
-            if not pos1.dragon:  #TODO this creates secondary dragons sometimes.  Need to catch or stitch
-                dragon_id = self.create_new_dragon()
-                dragon = self.dragons[dragon_id]
-                empty_ds.add(dragon)
-                dragon.add_member(pos1)
+            if not pos1.dragon:
+                n_dragons = list(self.get_neighboring_dragons(pos1, 0))
+                if n_dragons:
+                    d1 = n_dragons[0]
+                    d1.add_member(pos1)
+                    rv['all_dragons'].add(d1.identifier)
+                    for d in n_dragons[1:]:
+                        self.stitch_dragons(d1.identifier, d.identifier)
+                else:
+                    dragon_id = self.create_new_dragon()
+                    dragon = self.dragons[dragon_id]
+                    rv['all_dragons'].add(dragon.identifier)
+                    dragon.add_member(pos1)
             else:
                 dragon = self.dragons[pos1.dragon]
-
             for pos2 in empty:
                 if pos1 == pos2:
                     continue
                 if pos2 in dragon.neighbors:
                     dragon.add_member(pos2)
 
-        pairs_to_stitch = []
-        for d in empty_ds:
-            for x in empty_ds:
-                if d == x:
-                    continue
-                if d.neighbors.intersection(x.members):
-                    pairs_to_stitch.append((d.identifier, x.identifier))
-
-        for p, q in pairs_to_stitch:
-            self.stitch_dragons(p, q)
-
-        for d in empty_ds:
+        for d_id in rv['all_dragons']:
+            d = self.dragons[d_id]
             surr_color = set()
             for x in d.neighbors:
                 surr_color.add(x.player)
             if len(surr_color) == 1:
                 rv[list(surr_color)[0]].add(d)
-                print('{} surrounded by {}'.format(d.identifier, surr_color))
-        return empty_ds
+        return rv
 
     def to_ascii(self):
         board = ''

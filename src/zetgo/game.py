@@ -1,5 +1,5 @@
 import os
-from zetgo.board import Board
+from board import Board
 
 
 '''
@@ -33,8 +33,15 @@ class Game(object):
     def switch_player(self):
         self.current_player = self.current_player * -1
 
+    def add_up_score(self, player, dragons):
+        for d in dragons:
+            self.captures[player] += len(d.members)
+
     def score(self):
-        return self.board.set_empty_dragons()
+        rv = self.board.set_empty_dragons()
+        for x in [-1, 1]:
+            self.add_up_score(x, rv[x])
+        return self.captures
 
     def move(self, move):
         board = self.board
@@ -45,11 +52,10 @@ class Game(object):
                 if self.passes[0]:
                     self.passes[1] = True
                     result['complete'] = True
-                    return result
                 else:
                     self.passes[0] = True
                     self.switch_player()
-                    return result
+                return result
             x, y = convert_from_str(move)
         except ValueError:
             print('Need input of the form: int, int')
@@ -62,7 +68,6 @@ class Game(object):
                 result['valid'] = False
                 return result
             rv = board.imagine_position(pos, self.current_player)
-            print(rv)
             if rv['suicide']:
                 result['valid'] = False
                 return result
