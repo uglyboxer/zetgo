@@ -43,11 +43,14 @@ for row in range(BOARD_SIZE):
 pygame.init()
  
 # Set the HEIGHT and WIDTH of the screen
-WINDOW_SIZE = [255, 255]
+WINDOW_SIZE = [1020, 1020]
 screen = pygame.display.set_mode(WINDOW_SIZE)
  
 # Set title of screen
 pygame.display.set_caption("ZetGo")
+
+black_img = pygame.image.load('src/zetgo/images/black.png').convert()
+white_img = pygame.image.load('src/zetgo/images/white.png').convert()
  
 # Loop until the user clicks the close button.
 done = False
@@ -81,6 +84,7 @@ while not done and not game.passes[1]:
 
     # Set the screen background
     screen.fill(BLACK)
+    screen.blit(pygame.image.load('src/zetgo/images/board.png').convert(), (0, 0))
  
     # Draw the grid
     for row in range(BOARD_SIZE):
@@ -88,14 +92,22 @@ while not done and not game.passes[1]:
             color = WHITE
             if game.board.positions[row][column].player == 1:
                 color = GREEN
+                image = black_img
+                screen.blit(image,
+                             ((MARGIN + WIDTH) * column + MARGIN,
+                              (MARGIN + HEIGHT) * row + MARGIN))
             elif game.board.positions[row][column].player == -1:
                 color = RED
-            pygame.draw.rect(screen,
-                             color,
-                             [(MARGIN + WIDTH) * column + MARGIN,
-                              (MARGIN + HEIGHT) * row + MARGIN,
-                              WIDTH,
-                              HEIGHT])
+                image = white_img
+                screen.blit(image,
+                             ((MARGIN + WIDTH) * column + MARGIN,
+                              (MARGIN + HEIGHT) * row + MARGIN))
+            # pygame.draw.rect(screen,
+            #                  color,
+            #                  [(MARGIN + WIDTH) * column + MARGIN,
+            #                   (MARGIN + HEIGHT) * row + MARGIN,
+            #                   WIDTH,
+            #                   HEIGHT])
     pygame.draw.rect(screen, WHITE,
         [(MARGIN + WIDTH) * BOARD_SIZE + MARGIN,
          (MARGIN + HEIGHT) * BOARD_SIZE + MARGIN,
