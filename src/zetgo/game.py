@@ -41,12 +41,13 @@ class Game(object):
         rv = self.board.set_empty_dragons()
         for x in [-1, 1]:
             self.add_up_score(x, rv[x])
-        return self.captures
+        return {'captures': self.captures}
 
     def move(self, move):
         board = self.board
         result = {'complete': False,
-                  'valid': True}
+                  'valid': True,
+                  'captures': self.captures}
         try:
             if move == 'p':
                 if self.passes[0]:
@@ -92,6 +93,7 @@ class Game(object):
             board.z_table.add(rv['zhash'])
             self.passes[0] = False
         self.switch_player()
+        result['captures'] = self.captures
         return result
 
     def play(self):

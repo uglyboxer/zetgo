@@ -47,7 +47,8 @@ for row in range(BOARD_SIZE):
 pygame.init()
  
 # Set the HEIGHT and WIDTH of the screen
-WINDOW_SIZE = [516, 516]
+HEADER_OFFSET = 50
+WINDOW_SIZE = [516, 516 + HEADER_OFFSET]
 screen = pygame.display.set_mode(WINDOW_SIZE)
  
 # Set title of screen
@@ -64,6 +65,7 @@ done = False
 clock = pygame.time.Clock()
 
 w, h = screen.get_size()
+h = h - HEADER_OFFSET
 
 board = pygame.transform.scale(board, (w, h))
 black_img = pygame.transform.scale(black_img, (w // BOARD_SIZE - 1, h // BOARD_SIZE - 1))
@@ -87,9 +89,9 @@ for ynum in range(BOARD_SIZE):
     y = int(ynum * yspace) + margin
     pygame.draw.line(board, (0, 0, 0), (margin, y), (w - botmargin, y), 1)
 # Draw the letters on the board
-# pygame.font.init()
-# #myfont = pygame.font.Font("/usr/share/fonts/truetype/dustin/Balker.ttf", 12)
-# myfont = pygame.font.SysFont(None, 12)
+pygame.font.init()
+# myfont = pygame.font.Font("/usr/share/fonts/truetype/dustin/Balker.ttf", 12)
+myfont = pygame.font.SysFont(None, 22)
 # letters = ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T"]
 # letters = letters[:BOARD_SIZE + 1]
 # for i, l in enumerate(letters):
@@ -134,11 +136,13 @@ if starpoints:
 
 screen.blit(board, (0, 0))
 pygame.display.update()
-
+caps = 'Black: 0  White: 0'
+bgcolor = (0, 0, 0, 255)
+fontimage = myfont.render(caps, True, (255, 255, 255, 255), bgcolor)
 # -------- Main Program Loop -----------
 
 
-while not done and not game.passes[1]:
+while not done:
     event = pygame.event.wait()
     if event.type == pygame.QUIT:  # If user clicked close
         done = True  # Flag that we are done so we exit this loop
@@ -147,7 +151,7 @@ while not done and not game.passes[1]:
         # Change the x/y screen coordinates to grid coordinates
         column = pos[0] // (WIDTH + MARGIN)
         row = pos[1] // (HEIGHT + MARGIN)
-        if column == BOARD_SIZE and row == BOARD_SIZE:
+        if column <= 10 and row >= BOARD_SIZE:
             move = 'p'
             rv = game.move(move)
 
@@ -157,8 +161,10 @@ while not done and not game.passes[1]:
             grid[row][column] = game.board.positions[row][column].player
         # Set that location to one
         if rv['complete']:
-            game.score()
+            rv = game.score()
 
+        caps = 'Black: {}  White: {}'.format(rv['captures'][1], rv['captures'][-1])
+        fontimage = myfont.render(caps, True, (255, 255, 255, 255), bgcolor)
     # Set the screen background
     # screen.fill(BLACK)
     # screen.blit(pygame.image.load('src/zetgo/images/board.png').convert(), (0, 0))
@@ -185,17 +191,13 @@ while not done and not game.passes[1]:
                 # screen.blit(board, ((MARGIN + WIDTH) * column + MARGIN,
                 #               (MARGIN + HEIGHT) * row + MARGIN), pygame.Rect(x, y, HEIGHT, WIDTH))
                 pass
-    pygame.draw.rect(screen, WHITE,
-        [(MARGIN + WIDTH) * BOARD_SIZE + MARGIN,
-         (MARGIN + HEIGHT) * BOARD_SIZE + MARGIN,
-         WIDTH,
-         HEIGHT]) 
+
+    passimage = myfont.render('PASS', True, (255, 255, 255, 255), bgcolor)
+    # pygame.draw.rect(screen, WHITE, (10, h + 18, WIDTH, HEIGHT))
+    screen.blit(passimage, (10, h + 18))
+    screen.blit(fontimage, (300, h + 18))
     # Limit to 60 frames per second
-    clock.tick(10)
+    clock.tick(20)
     # Go ahead and update the screen with what we've drawn.
     pygame.display.update()
  
-# Be IDLE friendly. If you forget this line, the program will 'hang'
-# on exit.
-print(game.score())
-pygame.quit()
