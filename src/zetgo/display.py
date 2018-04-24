@@ -146,7 +146,7 @@ while not done:
     event = pygame.event.wait()
     if event.type == pygame.QUIT:  # If user clicked close
         done = True  # Flag that we are done so we exit this loop
-    elif event.type == pygame.MOUSEBUTTONUP:
+    elif event.type == pygame.MOUSEBUTTONDOWN:
         pos = pygame.mouse.get_pos()
         # Change the x/y screen coordinates to grid coordinates
         column = pos[0] // (WIDTH + MARGIN)
