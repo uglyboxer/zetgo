@@ -1,14 +1,15 @@
 '''
 adpated from TictactoeZobrist by https://github.com/blackicetee
 '''
-
 from random import SystemRandom
+
+from constants import BOARD_SIZE
 
 
 class Zobrist:
     def __init__(self):
         secure_random = SystemRandom()
-        self.zArray = [[secure_random.randrange(1000000000), secure_random.randrange(1000000000)] for i in range(25)]
+        self.zArray = [[secure_random.randrange(1000000000), secure_random.randrange(1000000000)] for i in range(BOARD_SIZE ** 2)]
 
     def get_zobrist_board_position_array(self):
         return self.zArray
@@ -28,7 +29,7 @@ class Zobrist:
 
     def transform_game_matrix_to_one_dimensional_list(self, _game_matrix, fake=False):
         one_dimensional_list = []
-        for idx, row in enumerate(_game_matrix):
+        for row in _game_matrix:
             for col in row:
                 if fake:
                     one_dimensional_list.append(col)

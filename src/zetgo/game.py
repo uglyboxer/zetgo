@@ -1,5 +1,6 @@
 import os
 from board import Board
+from constants import BOARD_SIZE
 
 
 '''
@@ -155,7 +156,7 @@ def convert_from_str(move):
 # TODO break up this function and provide api for bot or viz
 # TODO provide a list of possible moves for action space
 def start_game():
-    game = Game(5)
+    game = Game(BOARD_SIZE)
     os.system("clear")
     print(game.board.to_ascii())
     print(game.captures)
