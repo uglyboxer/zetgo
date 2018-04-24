@@ -7,7 +7,7 @@ class Board(object):
         self.board_size = board_size
         self.dragons = {}
         self.positions = [[Position(x, y, self.board_size) for y in range(self.board_size)] for x in range(self.board_size)]
-        self.zobrist = Zobrist()
+        self.zobrist = Zobrist(self.board_size)
         self.z_table = set()
 
     @property

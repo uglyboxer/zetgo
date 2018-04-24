@@ -3,13 +3,11 @@ adpated from TictactoeZobrist by https://github.com/blackicetee
 '''
 from random import SystemRandom
 
-from constants import BOARD_SIZE
-
 
 class Zobrist:
-    def __init__(self):
+    def __init__(self, board_size):
         secure_random = SystemRandom()
-        self.zArray = [[secure_random.randrange(1000000000), secure_random.randrange(1000000000)] for i in range(BOARD_SIZE ** 2)]
+        self.zArray = [[secure_random.randrange(1000000000), secure_random.randrange(1000000000)] for i in range(board_size ** 2)]
 
     def get_zobrist_board_position_array(self):
         return self.zArray

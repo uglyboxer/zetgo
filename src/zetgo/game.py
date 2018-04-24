@@ -1,6 +1,5 @@
 import os
 from board import Board
-from constants import BOARD_SIZE
 
 
 '''

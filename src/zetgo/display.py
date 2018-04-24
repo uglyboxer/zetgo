@@ -12,15 +12,16 @@ Borrowed and updated from https://github.com/xyproto/monkeyjump
 """
 import pygame
 from game import Game
-from constants import BOARD_SIZE
 
 
-game = Game(BOARD_SIZE)
+game = Game()
 # Define some colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
+
+BOARD_SIZE = game.board.board_size
  
 # This sets the WIDTH and HEIGHT of each grid location
 WIDTH = 25
@@ -162,6 +163,7 @@ while not done and not game.passes[1]:
     # screen.fill(BLACK)
     # screen.blit(pygame.image.load('src/zetgo/images/board.png').convert(), (0, 0))
 
+    screen.blit(board, (0, 0))
     # Draw the grid
     for row in range(BOARD_SIZE):
         for column in range(BOARD_SIZE):
