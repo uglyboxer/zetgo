@@ -1,7 +1,7 @@
 =====
 zetgo
 =====
-[![Build Status](https://travis-ci.org/uglyboxer/zetgo.svg?branch=master)](https://travis-ci.org/uglyboxer/zetgo)
+[![Build Status](https://travis-ci.org/uglyboxer/zetgo.svg?branch=master)](https://travis-ci.org/uglyboxer/zetgo)]
 
 A minimal go/baduk program, for use with machine learning. Still very much a WIP
 
