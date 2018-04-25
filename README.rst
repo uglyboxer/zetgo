@@ -17,7 +17,8 @@ Code borrowed and modified from:
 https://github.com/xyproto/monkeyjump (display examples)
 https://github.com/blackicetee (Zobrist Hash)
 
-[[https://github.com/uglyboxer/zetgo/blob/master/src/zetgo/images/goban.png?|alt="go board screen cap"]]
+.. image::/src/zetgo/images/goban.png
+
 
 Note
 ====
