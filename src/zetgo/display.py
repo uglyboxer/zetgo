@@ -142,7 +142,7 @@ fontimage = myfont.render(caps, True, (255, 255, 255, 255), bgcolor)
 # -------- Main Program Loop -----------
 
 
-while not done:
+while not done and not game.passes[1]:
     event = pygame.event.wait()
     if event.type == pygame.QUIT:  # If user clicked close
         done = True  # Flag that we are done so we exit this loop
@@ -201,3 +201,8 @@ while not done:
     # Go ahead and update the screen with what we've drawn.
     pygame.display.update()
  
+while not done:
+    event = pygame.event.wait()
+    if event.type == pygame.QUIT:  # If user clicked close
+        done = True
+    pygame.display.update()

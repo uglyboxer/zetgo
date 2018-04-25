@@ -28,7 +28,6 @@ information on PyScaffold see http://pyscaffold.org/.
 TODOs
 =====
 
-- 2 passes scores, but should also end the game.
 - UI updates for board sizes other than 19
 - Back button
 - Document the api
