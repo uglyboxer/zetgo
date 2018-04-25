@@ -20,6 +20,8 @@ https://github.com/xyproto/monkeyjump (display examples)
 https://github.com/blackicetee (Zobrist Hash)
 
 .. image:: src/zetgo/images/goban.png
+   :height: 583 px
+   :width: 514 px
 
 
 Note
