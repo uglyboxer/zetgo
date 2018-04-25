@@ -1,5 +1,5 @@
 import os
-from board import Board
+from zetgo.board import Board
 
 
 '''

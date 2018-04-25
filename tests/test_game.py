@@ -66,4 +66,4 @@ def test_score(game, moves):
     for move in moves:
         rv = game.move(move)
     rv = game.score()
-    assert rv == {1: 8, -1: 0}
+    assert rv == {'captures': {1: 8, -1: 0}}

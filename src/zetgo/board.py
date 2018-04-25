@@ -1,4 +1,4 @@
-from zobrist import Zobrist
+from zetgo.zobrist import Zobrist
 
 
 class Board(object):
