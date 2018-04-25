@@ -1,10 +1,11 @@
 =====
 zetgo
 =====
+A minimal go/baduk program, for use with machine learning. Still very much a WIP
+
 .. image:: https://travis-ci.org/uglyboxer/zetgo.svg?branch=master
     :target: https://travis-ci.org/uglyboxer/zetgo
 
-A minimal go/baduk program, for use with machine learning. Still very much a WIP
 
 
 Description
