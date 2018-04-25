@@ -34,6 +34,8 @@ information on PyScaffold see http://pyscaffold.org/.
 TODOs
 =====
 
+- Resign functionality for the api (and button in ui)
+- Value method for returning win/loss to the agent
 - UI updates for board sizes other than 19
 - Back button
 - Document the api
