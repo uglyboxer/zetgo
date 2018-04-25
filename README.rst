@@ -14,10 +14,12 @@ The goal of this project is to provide an API for machine learning algorithms to
 It contains a minimal GUI for interacting with the bots.
 
 Code borrowed and modified from:
+
 https://github.com/xyproto/monkeyjump (display examples)
+
 https://github.com/blackicetee (Zobrist Hash)
 
-.. image::/src/zetgo/images/goban.png
+.. image:: src/zetgo/images/goban.png
 
 
 Note
