@@ -93,6 +93,7 @@ class Game(object):
             board.z_table.add(rv['zhash'])
             self.passes[0] = False
         self.switch_player()
+        print(self.board.allowed_plays(self.current_player))
         result['captures'] = self.captures
         return result
 

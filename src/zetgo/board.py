@@ -16,6 +16,21 @@ class Board(object):
             return 1
         return max(self.dragons.keys()) + 1
 
+    def allowed_plays(self, for_player):
+        allowed = []
+        open_pos = []
+
+        for row in self.positions:
+            for pos in row:
+                if not pos.is_occupied:
+                    open_pos.append(pos)
+        for pos in open_pos:
+            rv = self.imagine_position(pos, for_player)
+            if rv['suicide'] or rv['repeat']:
+                continue
+            allowed.append(pos.loc)
+        return allowed
+
     def imagine_zobrist(self, pos, captures, player):
         board = self.fake_board(pos, captures, player)
         return self.zobrist.get_hash(board, fake=True)
