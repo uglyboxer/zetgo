@@ -11,7 +11,7 @@
 Borrowed and updated from https://github.com/xyproto/monkeyjump
 """
 import pygame
-from game import Game
+from zetgo.game import Game
 
 
 game = Game()
@@ -54,9 +54,9 @@ screen = pygame.display.set_mode(WINDOW_SIZE)
 # Set title of screen
 pygame.display.set_caption("ZetGo")
 
-board = pygame.image.load('src/zetgo/images/board.png')
-black_img = pygame.image.load('src/zetgo/images/black.png').convert()
-white_img = pygame.image.load('src/zetgo/images/white.png').convert()
+board = pygame.image.load('zetgo/images/board.png')
+black_img = pygame.image.load('zetgo/images/black.png').convert()
+white_img = pygame.image.load('zetgo/images/white.png').convert()
  
 # Loop until the user clicks the close button.
 done = False
