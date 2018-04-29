@@ -44,7 +44,6 @@ class Game(object):
         return {'captures': self.captures}
 
     def move(self, move):
-        board = self.board
         result = {'complete': False,
                   'valid': True,
                   'captures': self.captures}
@@ -63,37 +62,13 @@ class Game(object):
             result['valid'] = False
             return result
         else:
-            # The below should be a board method
-            pos = board.pos_by_location((x, y))
-            rv = board.imagine_position(pos, self.current_player)
-            if rv['occupied'] or rv['suicide'] or rv['repeat']:
-                result['valid'] = False
+            result = self.board.act((x, y), self.current_player)
+            if not result['valid']:
                 return result
-            friendly_dragons = list(rv['stitched'])
-            touched_dragons = set()
-            pos.occupy(self.current_player)
-            if not friendly_dragons:
-                dragon_id = board.create_new_dragon()
-                board.dragons[dragon_id].add_member(pos)
-                touched_dragons.add(board.dragons[dragon_id])
-            else:
-                base_dragon = friendly_dragons[0]
-                base_dragon.add_member(pos)
-                for dragon in friendly_dragons[1:]:
-                    board.stitch_dragons(base_dragon.identifier, dragon.identifier)
-                touched_dragons.add(base_dragon)
-            if rv['captured']:
-                for dragon in rv['captured']:
-                    self.captures[self.current_player] += board.capture_dragon(dragon.identifier)
-
-            touched_dragons.update(rv['opp_neighbor'])
-            for dragon in touched_dragons:
-                dragon.update()
-
-            board.z_table.add(rv['zhash'])
+            self.captures[1] += result['captures'][1]
+            self.captures[-1] += result['captures'][-1]
             self.passes[0] = False
         self.switch_player()
-        print(self.board.allowed_plays(self.current_player))
         result['captures'] = self.captures
         return result
 

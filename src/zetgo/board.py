@@ -16,6 +16,39 @@ class Board(object):
             return 1
         return max(self.dragons.keys()) + 1
 
+    def act(self, loc, current_player):
+        result = {'complete': False,
+                  'valid': True,
+                  'captures': {1: 0, -1: 0}}
+        pos = self.pos_by_location(loc)
+        rv = self.imagine_position(pos, current_player)
+        if rv['occupied'] or rv['suicide'] or rv['repeat']:
+            result['valid'] = False
+            return result
+        friendly_dragons = list(rv['stitched'])
+        touched_dragons = set()
+        pos.occupy(current_player)
+        if not friendly_dragons:
+            dragon_id = self.create_new_dragon()
+            self.dragons[dragon_id].add_member(pos)
+            touched_dragons.add(self.dragons[dragon_id])
+        else:
+            base_dragon = friendly_dragons[0]
+            base_dragon.add_member(pos)
+            for dragon in friendly_dragons[1:]:
+                self.stitch_dragons(base_dragon.identifier, dragon.identifier)
+            touched_dragons.add(base_dragon)
+        if rv['captured']:
+            for dragon in rv['captured']:
+                result['captures'][current_player] += self.capture_dragon(dragon.identifier)
+
+        touched_dragons.update(rv['opp_neighbor'])
+        for dragon in touched_dragons:
+            dragon.update()
+
+        self.z_table.add(rv['zhash'])
+        return result
+
     def allowed_plays(self, for_player):
         allowed = []
         open_pos = []
