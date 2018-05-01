@@ -1,7 +1,6 @@
 import os
 from zetgo.board import Board
 
-
 '''
 Play will start with:
 imagine_move(pos, color)
@@ -13,13 +12,14 @@ if legal:
     add move to dragon, stitch friendly dragons
     update enemy dragons
 pass ?
-    2nd pass ? 
+    2nd pass ?
         y == q
 if not:
-    self.previous_pass = False 
+    self.previous_pass = False
 switch player
 
 '''
+
 
 class Game(object):
 

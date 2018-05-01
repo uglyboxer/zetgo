@@ -3,18 +3,35 @@ from zetgo.zobrist import Zobrist
 
 class Board(object):
 
-    def __init__(self, board_size):
+    def __init__(self, board_size, state=None, current_player=None):
         self.board_size = board_size
         self.dragons = {}
         self.positions = [[Position(x, y, self.board_size) for y in range(self.board_size)] for x in range(self.board_size)]
         self.zobrist = Zobrist(self.board_size)
         self.z_table = set()
+        self.current_player = current_player or 1
+        if state:
+            self._generate_from_state(state)
 
     @property
     def next_dragon(self):
         if not self.dragons:
             return 1
         return max(self.dragons.keys()) + 1
+
+    def _generate_from_state(self, state):
+        '''
+        Assumes only valid histories passed in as state.  Otherwise False returns
+        from the act method would be treated as a pass.  Not ideal, but okay
+        until refactor time.
+
+        Args:
+            state  np.array  stack of 7 board positions 1's for b, -1's for w
+        '''
+        for ts in state:
+            for idx, row in enumerate(ts):
+                for idy, player_val in enumerate(row):
+                    self.act((idx, idy), player_val)
 
     def act(self, loc, current_player):
         result = {'complete': False,
