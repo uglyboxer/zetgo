@@ -10,6 +10,7 @@ class Board(object):
         self.zobrist = Zobrist(self.board_size)
         self.z_table = set()
         self.current_player = current_player or 1
+        self.captures = {1: 0, -1: 0}
         if state:
             self._generate_from_state(state)
 
@@ -26,12 +27,27 @@ class Board(object):
         until refactor time.
 
         Args:
-            state  np.array  stack of 7 board positions 1's for b, -1's for w
+            state  np.array  stack of 7 board positions 1's for b, -1's for w,
+                                      1 layer for b's score
+                                      1 layer for w's score
+                                      1 layer for current player TO PLAY
         '''
-        for ts in state:
-            for idx, row in enumerate(ts):
-                for idy, player_val in enumerate(row):
-                    self.act((idx, idy), player_val)
+        self.captures = {1: state[7][0],
+                         -1: state[8][0]}
+        self.current_player = state[9][0]
+        for idx, row in enumerate(state[0]):
+            for idy, player_val in enumerate(row):
+                rv = self.act((idx, idy), player_val)
+                print(rv['captures'])
+        last_state = state[0]
+        for ts in state[1:]:
+            mask = last_state - ts  # TODO elementwise
+            play = mask.where # not zero
+            current_player = play_val * -1
+            rv = self.act(play, current_player)
+            self.captures[1] += result['captures'][1]
+            self.captures[-1] += result['captures'][-1]
+
 
     def act(self, loc, current_player):
         result = {'complete': False,
