@@ -148,10 +148,6 @@ def test_capture_dragon(board):
     assert rv == 5
 
 
-def test_to_ascii(board):
-    pass
-
-
 def test_history():
     board = Board(5)
     board.current_player = -1
@@ -159,15 +155,14 @@ def test_history():
               [-1, 0, 0, 0, 0],
               [-1, 0, 0, 0, 0],
               [1, 0, 0, 1, 0],
-              [-1, 0, 0, 0, 0],
-              ]
+              [-1, 0, 0, 0, 0]]
     player_array = np.ones((5, 5)) * -1
-    for x in range(10):
+    for _ in range(10):
         board.history.append(sample)
 
     rv = board.dump_state_example()
 
-    assert rv.shape == (8, 5, 5) 
+    assert rv.shape == (8, 5, 5)
     np.testing.assert_array_equal(rv[-1], player_array)
 
 
