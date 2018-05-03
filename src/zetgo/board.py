@@ -1,3 +1,7 @@
+from collections import deque
+
+import numpy as np
+
 from zetgo.zobrist import Zobrist
 
 
@@ -11,6 +15,7 @@ class Board(object):
         self.z_table = set()
         self.current_player = current_player or 1
         self.captures = {1: 0, -1: 0}
+        self.history = deque([], maxlen=7)
         if state:
             self._generate_from_state(state)
 
@@ -41,6 +46,22 @@ class Board(object):
         for ts in state[:7]:
             zhash = self.zobrist.get_hash(ts)
             self.z_table.add(zhash)
+
+    def dump_state_example(self):
+        current = np.ones((self.board_size, self.board_size)) * self.current_player
+        history = list(self.history)
+        history.append(current)
+        return np.stack(history)
+
+    def update_history(self):
+        state = []
+        for row in self.positions:
+            row = []
+            for pos in row:
+                row.append(pos.player)
+            state.append(row)
+
+        self.history.append(np.array(state))
 
     def act(self, loc, current_player):
         result = {'complete': False,
@@ -73,6 +94,7 @@ class Board(object):
             dragon.update()
 
         self.z_table.add(rv['zhash'])
+        self.update_history()
         return result
 
     def allowed_plays(self, for_player):

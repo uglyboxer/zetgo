@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import pytest
+import numpy as np
+
 from zetgo.board import Board, Position, Dragon
 
 __author__ = "Cole Howard"
@@ -128,6 +130,7 @@ def test_imagine_suicide_position(board):
     assert not rv['stitched']
     assert not rv['captured']
 
+
 def test_capture_dragon(board):
     d = Dragon(1, board)
     board.dragons[1] = d
@@ -147,6 +150,25 @@ def test_capture_dragon(board):
 
 def test_to_ascii(board):
     pass
+
+
+def test_history():
+    board = Board(5)
+    board.current_player = -1
+    sample = [[1, 0, 0, 1, 0],
+              [-1, 0, 0, 0, 0],
+              [-1, 0, 0, 0, 0],
+              [1, 0, 0, 1, 0],
+              [-1, 0, 0, 0, 0],
+              ]
+    player_array = np.ones((5, 5)) * -1
+    for x in range(10):
+        board.history.append(sample)
+
+    rv = board.dump_state_example()
+
+    assert rv.shape == (8, 5, 5) 
+    np.testing.assert_array_equal(rv[-1], player_array)
 
 
 # ===== Position ========
