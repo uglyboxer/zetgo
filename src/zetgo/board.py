@@ -25,6 +25,9 @@ class Board(object):
             return 1
         return max(self.dragons.keys()) + 1
 
+    def switch_player(self):
+        self.current_player = self.current_player * -1
+
     def _generate_from_state(self, state):
         '''
         Assumes only valid histories passed in as state.  Otherwise False returns
@@ -56,25 +59,25 @@ class Board(object):
     def update_history(self):
         state = []
         for row in self.positions:
-            row = []
+            row_vals = []
             for pos in row:
-                row.append(pos.player)
-            state.append(row)
+                row_vals.append(pos.player)
+            state.append(row_vals)
 
         self.history.append(np.array(state))
 
-    def act(self, loc, current_player):
+    def act(self, loc):
         result = {'complete': False,
                   'valid': True,
                   'captures': {1: 0, -1: 0}}
         pos = self.pos_by_location(loc)
-        rv = self.imagine_position(pos, current_player)
+        rv = self.imagine_position(pos, self.current_player)
         if rv['occupied'] or rv['suicide'] or rv['repeat']:
             result['valid'] = False
             return result
         friendly_dragons = list(rv['stitched'])
         touched_dragons = set()
-        pos.occupy(current_player)
+        pos.occupy(self.current_player)
         if not friendly_dragons:
             dragon_id = self.create_new_dragon()
             self.dragons[dragon_id].add_member(pos)
@@ -87,7 +90,7 @@ class Board(object):
             touched_dragons.add(base_dragon)
         if rv['captured']:
             for dragon in rv['captured']:
-                result['captures'][current_player] += self.capture_dragon(dragon.identifier)
+                result['captures'][self.current_player] += self.capture_dragon(dragon.identifier)
 
         touched_dragons.update(rv['opp_neighbor'])
         for dragon in touched_dragons:

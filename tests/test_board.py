@@ -17,7 +17,40 @@ def board():
     return Board(board_size)
 
 
+@pytest.fixture()
+def moves():
+    '''
+    . . x . x
+    . x . . x
+    o x x . x
+    o x o x .
+    . o o o .
+
+    '''
+    return ['0, 2', '0, 3', '0, 4', '1, 2', '1, 1', '1, 3', '1, 4', '2, 0', '2, 1', '2, 3', '2, 2', '3, 0', '2, 4',
+            '3, 2', '3, 1', '4, 2', '4, 1', '4, 3', '3, 3', 'p', 'p']
+
+
 # ===== Board ========
+def test_switch_player(board):
+    assert board.current_player == 1
+    board.switch_player()
+    assert board.current_player == -1
+    board.switch_player()
+    assert board.current_player == 1
+
+
+def test_dump_state_example(board, moves):
+    for move in moves[:9]:
+        loc = move.split(', ')
+        board.act((int(loc[0]), int(loc[1])))
+        board.switch_player()
+    state = board.dump_state_example()
+    assert len(state) == 8
+    assert state[0][0][2] == 1
+    assert state[0][0][3] == -1
+    assert state[-1][0][0] == -1
+
 
 def test_board_size(board):
 

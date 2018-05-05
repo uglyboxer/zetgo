@@ -26,12 +26,8 @@ class Game(object):
     def __init__(self, board_size=19):
 
         self.board = Board(board_size=board_size)
-        self.current_player = 1  # TODO, accept handicaps and set this to 'w'
         self.passes = [False, False]
         self.captures = {1: 0, -1: 0}
-
-    def switch_player(self):
-        self.current_player = self.current_player * -1
 
     def add_up_score(self, player, dragons):
         for d in dragons:
@@ -54,7 +50,7 @@ class Game(object):
                     result['complete'] = True
                 else:
                     self.passes[0] = True
-                    self.switch_player()
+                    self.board.switch_player()
                 return result
             x, y = convert_from_str(move)
         except ValueError:
@@ -62,65 +58,15 @@ class Game(object):
             result['valid'] = False
             return result
         else:
-            result = self.board.act((x, y), self.current_player)
+            result = self.board.act((x, y))
             if not result['valid']:
                 return result
             self.captures[1] += result['captures'][1]
             self.captures[-1] += result['captures'][-1]
             self.passes[0] = False
-        self.switch_player()
+        self.board.switch_player()
         result['captures'] = self.captures
         return result
-
-    def play(self):
-        board = self.board
-        print(board.to_ascii())
-        while not self.passes[1]:
-            move = input('{} please place stone: '.format(self.current_player))
-            try:
-                if move == 'p':
-                    if self.passes[0]:
-                        self.passes[1] = True
-                    else:
-                        self.passes[0] = True
-                x, y = convert_from_str(move)
-            except ValueError:
-                print('Need input of the form: int, int')
-                continue
-            else:
-                pos = board.pos_by_location((x, y))
-                if pos.is_occupied:
-                    continue
-                rv = board.imagine_position(pos, self.current_player)
-                print(rv)
-                if rv['suicide']:
-                    continue
-                # TODO imagine zoborist
-                friendly_dragons = list(rv['stitched'])
-                touched_dragons = set()
-                pos.occupy(self.current_player)
-                if not friendly_dragons:
-                    dragon_id = board.create_new_dragon()
-                    board.dragons[dragon_id].add_member(pos)
-                    touched_dragons.add(board.dragons[dragon_id])
-                else:
-                    base_dragon = friendly_dragons[0]
-                    base_dragon.add_member(pos)
-                    for dragon in friendly_dragons[1:]:
-                        board.stitch_dragons(base_dragon.identifier, dragon.identifier)
-                    touched_dragons.add(base_dragon)
-                if rv['captured']:
-                    for dragon in rv['captured']:
-                        self.captures[self.current_player] += board.capture_dragon(dragon.identifier)
-
-                touched_dragons.update(rv['opp_neighbor'])
-                for dragon in touched_dragons:
-                    dragon.update()
-                self.passes[0] = False
-            self.switch_player()
-            print(board.to_ascii())
-            print(self.captures)
-        self.score()
 
 
 def convert_from_str(move):
@@ -138,7 +84,7 @@ def start_game():
     print(game.board.to_ascii())
     print(game.captures)
     while not game.passes[1]:
-        move = input('{} please place stone: '.format(game.current_player))
+        move = input('{} please place stone: '.format(game.board.current_player))
         rv = game.move(move)
         if rv['complete']:
             game.score()
