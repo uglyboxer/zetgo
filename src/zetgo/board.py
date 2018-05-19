@@ -161,7 +161,6 @@ class Board(object):
         return d1
 
     def get_neighboring_dragons(self, pos, player):
-        print('neighbor called with {} {}'.format(pos, player))
         neighbors = [self.pos_by_location(x) for x in pos.neighbors_locs]
         rv = set()
         for x in neighbors:
