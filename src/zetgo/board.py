@@ -15,6 +15,7 @@ class Board(object):
         self.z_table = set()
         self.current_player = current_player or 1
         self.captures = {1: 0, -1: 0}
+        self.passes = [False, False]
         self.history = deque([], maxlen=7)
         if state:
             self._generate_from_state(state)
@@ -99,6 +100,30 @@ class Board(object):
         self.z_table.add(rv['zhash'])
         self.update_history()
         return result
+
+    def take_action(self, loc):
+        """ Wrapper for act for DRL to use """
+        done = False
+        result = self.act(loc)
+        if result['complete']:
+            winner = self.score()
+            if winner == self.current_player:
+                value = 1
+            else:
+                value = 0
+            done = True
+        return self, value, done
+
+    def add_up_score(self, player, dragons):
+        for d in dragons:
+            self.captures[player] += len(d.members)
+
+    def score(self):
+        rv = self.set_empty_dragons()
+        for x in [-1, 1]:
+            self.add_up_score(x, rv[x])
+        caps = [self.captures[-1], -100000, self.captures[1]]
+        return caps.index(max(caps)) - 1  # Okay this is embarassing hack.  sorry
 
     def allowed_plays(self, for_player):
         allowed = []
